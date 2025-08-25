@@ -48,6 +48,9 @@ _start:
     LDR R1, [R1]        ; Carrega o valor 3 em R1
     SWI PRINT_INT
 
+    ; Termina o programa
+    SWI EXIT
+
 .data
 hello_msg: .asciz "Hello, World!"
 num100: .word 100
