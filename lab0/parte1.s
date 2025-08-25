@@ -49,6 +49,6 @@ _start:
     SWI PRINT_INT
 
 .data
-hello_msg: .asciz "Hello, World!\n"
+hello_msg: .asciz "Hello, World!"
 num100: .word 100
 num3: .byte 0b00000011
