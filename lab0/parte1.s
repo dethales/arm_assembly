@@ -40,8 +40,8 @@ _start:
 
     ; Imprime o número 3
     MOV R0, #STDOUT     ; Define o arquivo de saída como stdout
-    LDR R1, =num3       ; Carrega o endereço de num100 em R1
-    LDR R1, [R1]        ; Carrega o valor 100 em R1
+    LDR R1, =num3       ; Carrega o endereço de num3 em R1
+    LDR R1, [R1]        ; Carrega o valor 3 em R1
     SWI PRINT_INT
 
 .data
