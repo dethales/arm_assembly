@@ -24,9 +24,13 @@ somente depois ver os resultados no arquivo fonte.
 
 .text
 _start:
-    ; Imprime a mensagem "Hello, World!\n"
+    ; Imprime a mensagem "Hello, World!"
     LDR R0, =hello_msg
     SWI PRINT_STRING_STDOUT
+
+    ; Imprime o \n
+    MOV R0, #'\n
+    SWI PRINT_CHAR_STDOUT
 
     ; Imprime o número 100
     MOV R0, #STDOUT     ; Define o arquivo de saída como stdout
