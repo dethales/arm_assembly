@@ -69,10 +69,10 @@ _start:
     SWI     EXIT
 
 .data
-    a:  .word 10                ; Primeiro número
-    b:  .word 5                 ; Segundo número
-    mais:   .asciz " + "
-    menos:  .asciz " - "
-    igual:  .asciz " = "
+a:  .word 10                ; Primeiro número
+b:  .word 5                 ; Segundo número
+mais:   .asciz " + "
+menos:  .asciz " - "
+igual:  .asciz " = "
 
 .end
