@@ -1,6 +1,46 @@
-;Aluno: Thales Coutinho Layber
+/*
+Parte 1
+1. Antes de começar o programa em Assembly/ARM, defina as seguintes constantes para as
+interrupções de saída no stdout: uma constante para escrever as strings, uma para escrever
+inteiros, uma para escrever caracteres ASCII e uma para designar o modo de saída padrão
+(mode is Stdout).
+2. Em seguida, faça um programa em Assembly/ARM que imprime no stdout 10 valores
+inteiros começando por a=150 (definido como word na área de dados) e a cada valor seguinte
+será deslocado a esquerda por 1 bit. Para fazer o loop 10 vezes deve-se definir uma variável
+inicial i=0 definida como word. Entre as impressões dos inteiros, imprime no stdout uma string
+vazia.
+3. A seguir, imprime no stdout 10 caracteres ASCII começando por b=’C’ (onde, b é definido
+como byte na área de dados) e a cada valor ASCII seguinte será deslocado a esquerda por 2
+bits. Para fazer o loop 10 vezes deve-se definir um valor inicial para um registrador igual a zero
+(0). Entre as impressões dos caracteres ASCII, deve-se imprimir no stdout uma string vazia.
+4. Em seguida, imprime uma string retorno de carro e logo após escreve no stdout uma string
+com os dizeres “Fim do programa”.
+5. O programa solicitado com o arquivo fonte (*.s) está mostrado logo a seguir.
+6. Compare seu projeto (Laboratório 2) com o projeto hello.s compilado no Dev-C++, mostrado
+abaixo. Na comparação do Laboratório 2 com hello.s, verifica a definição das constantes,
+nomes dos registradores, instrução de comandos, labels, formato do programa principal, nome
+dos mnemônicos, sintaxe dos comandos, dentre outros. Qual conclusão podemos chegar?
+7. Observe o uso de labels em ambos os projetos para realizar conjunto de instruções de forma
+iterativa.
+8. Ainda como parte da comparação no item 6, investigue os tipos e os nomes de registradores
+na arquitetura x86 através de uma ferramenta de pesquisa (Internet, livros, apostilas, dentre
+outras).
+8. Uma boa forma de aprendizado e memorização é praticar e tentar fazer o programa e
+somente depois ver os resultados no arquivo fonte.
+Parte 2
+Depois do programa anterior realizado, iremos incorporar mais funcionalidades a este
+programa. Para isto faça:
+1. Antes da escrita da mensagem "Fim do programa" e depois da impressão da string retorno
+de carro imprima 20 valores deslocando cada um a esquerda de um bit começando por
+11111111 definido por byte na área de dados. Entre as impressões dos valores imprimir no
+stdout uma string vazia.
+2. Em seguida, imprime uma string de retorno de carro.
+3. Após, imprima 20 valores deslocando cada um a direita de um bit começando por 11111111
+e a cada impressão imprimir no stdout uma string vazia.
+4. O programa alterado, arquivo fonte (*.s) não está mostrado abaixo.
+*/
 
-.global _start
+;Aluno: Thales Coutinho Layber
 
 .equ PRINT_STRING_STDOUT,   0x02
 .equ PRINT_INT,             0x6B
