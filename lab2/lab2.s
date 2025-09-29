@@ -50,122 +50,72 @@ e a cada impressão imprimir no stdout uma string vazia.
 
 .text
 _start:
-    ; R2 = i == 0
     LDR     R2, =i
-    LDR     R2, [R2]
+    LDR     R2, [R2]            ; R2 = contador
 
-    ; R3 = a == 150
-    LDR     R3, =a
-    LDR     R3, [R3]
+    LDR     R1, =a
+    LDR     R1, [R1]            ; entrada = 150
+    MOV     R3, #1              ; Configura a impressão para int (1)
+    BL shift_loop
+
+    LDR     R1, =b
+    LDR     R1, [R1]            ; entrada = 'B'
+    MOV     R3, #0              ; Configura a impressão para char (0)
+    BL shift_loop
 
 
-; subrotina para imprimir um inteiro
-; R1: inteiro a ser impresso
-; Registradores alterados: R0
+
+/*
+Subrotina: print
+    Imprime uma variável que pode ser um inteiro ou char
+    Entrada:    R3 = 0 (char) ou 1 (int), R1 = variável a ser impressa
+    Saída:      (nenhuma)
+    Preserva:   R1, R3
+    Modifica:   R0
+*/
+print:
+    CMP     R3, #1              ; Compara R3 com 1
+    BEQ     print_int           ; Se R3 == 1, vai para print_int
+    B       print_char          ; Senão, vai para print_char
+
+print_char:
+    MOV     R0, R1              ; Move o caractere de R1 para R0
+    SWI     PRINT_CHAR_STDOUT   ; Imprime o caractere
+    B       print_end           ; Pula para o fim
+
 print_int:
-    ; imprime o valor da variavel em R1
-    MOV     R0, #STDOUT
-    SWI     PRINT_INT
+    MOV     R0, #STDOUT         ; Define modo stdout
+    SWI     PRINT_INT           ; Imprime o inteiro em R1
 
-    ; imprime uma nova linha
-    LDR     R0, =0xA
-    SWI     PRINT_CHAR_STDOUT
+print_end:
+    MOV     R0, #'\n'
+    SWI     PRINT_CHAR_STDOUT   ; Imprime quebra de linha
 
-    ; retorno da subrotina
-    MOV      PC, LR
+    MOV     PC, LR              ; retorno da subrotina
 
-; subrotina para fazer 9 shifts
-; Imprime o valor inicial e os 9 valores shiftados
-; R0: valor inicial
-; R1: quantidade de bits para o shift (por passo)
-; R2: modo de impressão (0=char, 1=int)
-shift_9_times:
-    
-    CMP     R2, #10
-    
-    ; imprime o valor da variavel em R2
-    
+/*
+Subrotina: shift_loop
+    loop que vai fazendo shift de 1 bit a esquerda sucessivas vezes
+    Entrada:    R0 = char(0) ou int (1) a ser passado para a subrotina print
+                R1 = valor a ser shiftado
+                R2 = contador descrescente
+    Saída:      R1 = valor que foi shiftado
+    Modifica:   R0, R1, R2
+*/
+shift_loop:
+    BL      print               ; Imprime a variável em R1
 
-    ; imprime um espaço
-    LDR     R0, #' '
-    SWI     PRINT_CHAR_STDOUT
+    MOV     R1, R1, LSL #1      ; Faz o shift para esquerda em 1 bit
 
-    ; shift a um bit para a esquerda (a = a << 1)
-    MOV     R3, R3, LSL #1
+    SUBS    R2, R2, #1          ; Decrementa o contador
+    BNE     shift_loop          ; Loop se o contador > 0
 
-    ; incrementa i (i = i + 1)
-    ADD     R2, R2, #1
-
-    ; repete enquanto i < 10
-    CMP     R2, #10
-    BLT     loop
-
-
-
-loop_shift:
-    ; se i >= 10, termina o loop
-    CMP     R2, #10
-    BGE     end_loop_shift
-
-    ; imprime o valor de a
-    MOV     R0, #STDOUT
-    MOV     R1, R3
-    SWI     PRINT_INT
-
-    ; imprime um espaço
-    MOV     R0, #' '
-    SWI     PRINT_CHAR_STDOUT
-
-    ; shift a um bit para a esquerda (a = a << 1) (multiplica por 2)
-    ; LSL = Logical Shift Left 
-    MOV     R3, R3, LSL #1
-
-    ; incrementa i (i = i + 1)
-    ADD     R2, R2, #1
-
-    ; retoma ao início do loop
-    B       loop_shift
-
-end_loop_shift:
-    ; R2 = i == 0
-    LDR     R2, =i
-    LDR     R2, [R2]
-    
-    ; R3 = b == 'C'
-    LDR     R3, =b
-    LDRB    R3, [R3] ; LDRB é a instrução de carregar byte da memória
-
-loop_chars:
-    ; se i >= 10, termina o loop
-    CMP     R2, #10
-    BGE     end_loop_chars
-
-    ; imprime o valor de b
-    MOV     R0, R3
-    SWI     PRINT_CHAR_STDOUT
-
-    ; imprime um espaço
-    MOV     R0, #' '
-    SWI     PRINT_CHAR_STDOUT
-
-    ; shift b um bit para a esquerda (b = b << 2) (multiplica por 2)
-    ; LSL = Logical Shift Left 
-    MOV     R3, R3, LSL #2
-
-    ; incrementa i (i = i + 1)
-    ADD     R2, R2, #1
-
-    ; retoma ao início do loop
-    B       loop_chars
-    
-
-end_loop_chars:
+    MOV     PC, LR              ; Retorna da subrotina
 
 
 .data
-a: .word 150
-b: .byte 'C'
-i: .word 0
-
+a:  .word 150
+b:  .byte 'C'
+i:  .word 10
 
 .end
