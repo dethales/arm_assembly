@@ -38,3 +38,67 @@ encontrou? Em que situação pode utilizar esta propriedade de deslocar bits à 
 7. O programa alterado, arquivo fonte (*.s) não está mostrado abaixo.
 */
 
+.equ PRINT_CHAR_STDOUT,     0x00
+.equ PRINT_STRING_STDOUT,   0x02
+.equ PRINT_INT,             0x6B
+.equ STDOUT,                0x01
+.equ EXIT,                  0x11
+
+.text
+_start:
+    MOV     R2, #0x2A           ; R2 = 42 em hexadecimal
+    MOV     R3, #22             ; R3 = 22 em decimal
+    ADD     R1, R2, R3          ; R1 = R2 + R3
+    BL      print_int           ; Imprime a soma
+
+    LDR     R5, =176            ; carrega x=176 em R5
+    MOV     R4, R5              ; move x para R4
+    LDR     R6, =247            ; carrega y=247 em R6
+    ADD     R1, R5, R6          ; r1 = x + y
+    BL      print_int           ; Imprime a soma
+
+    MUL     R1, R5, R6          ; R1 = x * y
+    BL      print_int           ; Imprime a multiplicação
+
+    RSB     R1, R4, #200        ; R1 = 200 - x (RSB = Subtração Reversa)
+    BL      print_int
+
+    MOV     R8, #2              ; Valor 2 para o MUL multiplicar
+    LDR     R2, =54             ; R2 = number_value
+    MUL     R1, R2, R8          ; R1 = number_value * 2
+    BL      print_int
+
+    MOV     R1, R2, LSL #1      ; R1 = R2 << 1
+    BL      print_int
+
+    MOV     R7, #5              ; contador = 5 e vai descrescendo (5 loops)
+loop:
+    MOV     R2, R2, LSL #1      ; R2 deslocado 1 bit à esquerda
+    BL      print_int           ; Imprime o valor deslocado
+    
+    SUBS    R7, R7, #1          ; Decrementa contador (atualiza flags)
+    BNE     loop
+
+
+    SWI     EXIT
+
+/*
+Subrotina: print_int
+    Imprime o numero inteiro em R1 e um '\n'
+    Entrada:    R1 = número
+    Saída:      (nenhuma)
+    Preserva:   R1
+    Modifica:   R0
+*/
+print_int:
+    MOV     R0, #STDOUT
+    SWI     PRINT_INT           ; Imprime o inteiro
+
+    MOV     R0, #'\n'
+    SWI     PRINT_CHAR_STDOUT   ; Imprime '\n'
+
+    MOV     PC, LR              ; Retorna da subrotina
+
+.data
+
+.end
