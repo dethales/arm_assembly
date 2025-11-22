@@ -14,60 +14,74 @@ Thales Coutinho Layber e Pedro Belizário */
 .equ LCD_HEIGHT,    15
 
 .text
+/* Variaveis globais:
+    r0 = coluna
+    r1 = linha
+    r2 = caractere
+*/
 _start:
 
     SWI     LCD_CLEAR_SCREEN                ; Limpa a tela do LCD
     BL      draw_field                      ; Desenha o campo de jogo vazio
 
 game_loop:
-    BL      wait_keypad                     ; Caprura o botão pressionado (r0=linha, r1=coluna)
+    BL      wait_keypad                     ; Caprura o botão pressionado (r0=coluna, r1=linha)
     BL      draw_x                          ; Desenha o X na posição do botão pressionado
+    MOV     r2, #'X'                        ; Carrega o caractere 'X' em r2
+    BL      store_move
     B       game_loop                       ; Repete o loop do jogo
 
     SWI     EXIT                            ; Encerra o programa
 
-; Subrotina: Desenha o campo do jogo da velha vazio no LCD
+/* Subrotina: draw_field - Desenha o campo do jogo da velha vazio no LCD
+Entradas:
+    string empty_line no .data
+Saídas:
+    Desenha o campo vazio no LCD
+*/
 draw_field:
-    STMFD   SP!, {LR}                       ; Salva o LR na pilha
+    STMFD   SP!, {r0-r2, LR}
 
-    ; Desenha a 1ª linha vazia
-    MOV     r0, #0                          ; Posição X inicial
-    MOV     r1, #0                          ; Posição Y inicial
-    LDR     r2, =empty_line                 ; Carrega o endereço da linha vazia
-    SWI     LCD_DISPLAY_STRING
+    MOV     r1, #0                          ; Linha inicial = 0
+    LDR     r2, =empty_line                 ; Carrega a string da linha vazia
 
-    ; Repete para a 2ª linha
-    MOV     r1, #1
-    SWI     LCD_DISPLAY_STRING
+loop_df:
+    MOV     r0, #0                          ; Coluna inicial = 0
+    SWI     LCD_DISPLAY_STRING              ; Desenha a linha vazia no LCD na linha r1
+    ADD     r1, r1, #1                      ; Incrementa a linha
+    CMP     r1, #3                          ; Verifica se desenhou 3 linhas
+    BLT     loop_df                         ; Se não desenhou 3 linhas, repete
 
-    ; Repete para a 3ª linha
-    MOV     r1, #2
-    SWI     LCD_DISPLAY_STRING
+    LDMFD   SP!, {r0-r2, PC}
 
-    LDMFD   SP!, {PC}                       ; Restaura o lr da pilha e retorna
-
-; Subrotina: Calcula a posição (x, y) no LCD para determinada célula (row, col) no campo e
-; desenha na posição o caractere r2
-; Entrada:
-;   r0 = row   (y)
-;   r1 = col   (x-base)
-;   r2 = caractere
+/*
+Subrotina: draw_at_position - Calcula a posição (x, y) no LCD para determinada célula (col, row) no campo e 
+    desenha na posição o caractere r2
+Entradas:
+    r0 = coluna
+    r1 = linha
+    r2 = caractere
+Saídas:
+    Desenha o caractere r2 na posição (x, y) correspondente no LCD
+*/
 draw_at_position:
-    STMFD   SP!, {r0, r1, r3, LR}           ; Salva r0, r1, r2 e lr na pilha
+    STMFD   SP!, {r0, LR}                   ; Salva LR na pilha
 
-    ADD     r1, r1, r1, LSL #1              ; Calcula x = 3*col + 1   (col está em r1)
-    ADD     r1, r1, #1                      ; r1 = 3*col + 1 → x
-
-    ; troca r0 ↔ r1 (para SWI receber (x,y))
-    MOV     r3, r0                          ; r3 <- row
-    MOV     r0, r1                          ; r0 <- x
-    MOV     r1, r3                          ; r1 <- row = y
+    ADD     r0, r0, r0, LSL #1              ; Calcula x = 3*col + 1   (col está em r0)
+    ADD     r0, r0, #1                      ; r0 = 3*col + 1 → x
 
     SWI     LCD_DISPLAY_CHAR                ; Desenha o caractere r2 no LCD na posição (x, y) = (r0, r1)
 
-    LDMFD   SP!, {r0, r1, r3, PC}           ; Restaura r0, r1, r2 e LR da pilha e retorna
+    LDMFD   SP!, {r0, PC}                   ; Restaura LR da pilha e retorna
 
-; Subrotina: Desenha um X no campo designado row=r0, col=r1
+/*
+Subrotina: draw_x - Desenha um X no campo designado
+Entradas:
+    r0 = coluna
+    r1 = linha
+Saídas: 
+    Desenha o X na posição r0, r1
+*/
 draw_x:
     STMFD   SP!, {r2, LR}                   ; Salva r2 e lr na pilha
 
@@ -76,15 +90,28 @@ draw_x:
 
     LDMFD   SP!, {r2, PC}                   ; Restaura r2 e lr da pilha
 
-; Subrotina: Desenha um O no campo designado x=r0, y=r1
+/*
+Subrotina: draw_o - Desenha um O no campo designado
+Entradas:
+    r0 = coluna
+    r1 = linha
+Saídas: Desenha o O na posição r0, r1
+*/
 draw_o:
     STMFD   SP!, {r2, LR}                   ; Salva r2 e lr na pilha
     MOV     r2, #'O'                        ; Carrega o caractere 'O' em r2
     BL      draw_at_position                ; Desenha o O na posição r0, r1
     LDMFD   SP!, {r2, PC}                   ; Restaura r2 e lr da pilha e retorna
 
-; Subrotina: Aguarda até que um dos 9 botões do teclado seja pressionado e
-;            retorna o índice (row, col) do botão pressionado em (r0, r1)
+/*
+Subrotina: wait_keypad - Aguarda até que um dos 9 botões do teclado seja pressionado e
+ retorna o índice (col, row) do botão pressionado em (r0, r1)
+Entradas:
+    Botão do teclado azul pressionado
+Saídas:
+    r0 = coluna
+    r1 = linha
+*/
 wait_keypad:
     STMFD   SP!, {r2, r3, LR}               ; preserva temporários
 
@@ -108,12 +135,35 @@ find_bit:
 found_bit:
     ; r2 tem o número do bit (0,1,2,4,5,6,8,9,10)
     ; acha o indice (row, col)
-    MOV     r0, r2, LSR #2                  ; row = bit / 4
-    AND     r1, r2, #3                      ; col = bit % 4
+    AND     r0, r2, #3                      ; r0 = col = bit % 4
+    MOV     r1, r2, LSR #2                  ; r1 = row = bit / 4
     LDMFD   SP!, {r2, r3, PC}               ; Restaura temporários e retorna
+
+/*
+Subrotina: store_move - Armazena o movimento no vetor field
+Entradas:
+    r0 = coluna
+    r1 = linha
+    r2 = caractere ('X' ou 'O')
+Saídas: (nenhuma)
+*/
+store_move:
+    STMFD   SP!, {r3, r4, LR}               ; Salva r3, r4 e lr na pilha
+
+    ; Calcula o índice (index) no array 1D correspondente à posição (col, row)
+    ADD     r3, r1, r1, LSL #1              ; r3 = row + (row<<1) = 3*row
+    ADD     r3, r3, r0                      ; index = r3 = row*3 + col
+
+    ; Calcula o endereço do elemento field[index]
+    LDR     r4, =field                      ; Carrega o endereço base do array field
+    ADD     r4, r4, r3                      ; Endereço final = base + index
+
+    STRB    r2, [r4]                        ; Grava o caractere em field[index]
+
+    LDMFD   SP!, {r3, r4, PC}               ; Restaura r3, r4 e lr da pilha e retorna
 
 .data
 empty_line: .asciz "[_][_][_]"
-
+field:      .byte ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
 
 .end
