@@ -1,5 +1,5 @@
-/* Trabalho de Arquitetura de Computadores
-Thales Coutinho Layber e Pedro Belizário */
+/* Trabalho de Arquitetura de Computadores - Jogo da Velha no ARMSim
+Thales Coutinho Layber e Pedro Belizário Souza Gomes */
 
 .equ PRINT_CHAR_STDOUT,     0x00            ; Chamada de sistema para imprimir caractere
 .equ PRINT_STRING_STDOUT,   0x02            ; Chamada de sistema para imprimir string
@@ -9,8 +9,6 @@ Thales Coutinho Layber e Pedro Belizário */
 .equ LCD_DISPLAY_CHAR,      0x207           ; Chamada de sistema para exibir caractere no LCD
 .equ LCD_CLEAR_SCREEN,      0x206           ; Chamada de sistema para limpar a tela do LCD
 .equ READ_KEYPAD,           0x203           ; Chamada de sistema para ler o teclado de botões azuis
-.equ LCD_WIDTH,     40
-.equ LCD_HEIGHT,    15
 
 .text
 /* Variaveis globais:
@@ -21,6 +19,7 @@ Thales Coutinho Layber e Pedro Belizário */
     r4 = jogador atual (0 para X, 1 para O)
     r5 = jogador vencedor (0: jogo em andamento, 1: jogador X venceu, 2: jogador O venceu, 3: empate)
 */
+; Loop Principal do jogo
 _start:
     SWI     LCD_CLEAR_SCREEN                ; Limpa a tela do LCD
     MOV     r4, #0                          ; Jogador atual = 0 (X)
@@ -59,6 +58,7 @@ game_loop:
 game_end:
     BL      display_winner                  ; Exibe a mensagem do vencedor ou empate
     SWI     EXIT                            ; Encerra o programa
+
 
 /* Subrotina: draw_field - Desenha o campo do jogo da velha vazio no LCD
 Entradas:
@@ -362,6 +362,7 @@ print_msg:
 
 done_winner:
     LDMFD   SP!, {r0-r2, PC}
+
 
 .data
 field:      .byte ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
